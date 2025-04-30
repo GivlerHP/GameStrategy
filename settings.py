@@ -4,7 +4,7 @@ import pygame
 pygame.init()
 
 # Размер клетки
-TILE_SIZE = 80
+TILE_SIZE = 110
 
 # Размер поля
 FIELD_WIDTH = 12
@@ -26,5 +26,5 @@ BLUE = (0, 0, 255)
 GRAY = (180, 180, 180)
 
 # Шрифт по умолчанию
-FONT_NAME = 'arial'
-FONT_SIZE = 20
+FONT_PATH = "assets/fonts/pixel.ttf"
+FONT_SIZE = 27
