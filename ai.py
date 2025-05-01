@@ -2,7 +2,7 @@
 
 from units.base import Archer, Cavalry, Warrior
 
-def ai_turn(carthage_army, rome_army, log):
+def ai_turn(carthage_army, rome_army, log, obstacles):
     log("Ход Карфагена")
     for unit in carthage_army.units:
         if not unit.is_alive():
@@ -23,9 +23,7 @@ def ai_turn(carthage_army, rome_army, log):
                 unit.attack(target)
                 log(f"{unit.name} атакует {target.name} вблизи")
             elif unit.can_move():
-                step_x = 1 if dx > 0 else -1 if dx < 0 else 0
-                step_y = 1 if dy > 0 else -1 if dy < 0 else 0
-                try_move(unit, step_x, step_y, carthage_army.units, rome_army.units, log)
+                move_toward(unit, dx, dy, carthage_army.units, rome_army.units, log, obstacles)
 
         # --- ЛУЧНИК ---
         elif isinstance(unit, Archer):
@@ -39,7 +37,7 @@ def ai_turn(carthage_army, rome_army, log):
                 else:
                     step_x = 1 if dx > 0 else -1 if dx < 0 else 0
                     step_y = 1 if dy > 0 else -1 if dy < 0 else 0
-                try_move(unit, step_x, step_y, carthage_army.units, rome_army.units, log)
+                try_move(unit, step_x, step_y, carthage_army.units, rome_army.units, log, obstacles)
 
         # --- ВСАДНИК ---
         elif isinstance(unit, Cavalry):
@@ -48,18 +46,27 @@ def ai_turn(carthage_army, rome_army, log):
                 unit.charge_attack(target)
                 log(f"{unit.name} делает наскок на {target.name}")
             elif unit.can_move():
-                if unit.x != target.x:
-                    step_x = 1 if dx > 0 else -1
-                    step_y = 0
-                else:
-                    step_x = 0
-                    step_y = 1 if dy > 0 else -1
-                try_move(unit, step_x, step_y, carthage_army.units, rome_army.units, log)
+                move_toward(unit, dx, dy, carthage_army.units, rome_army.units, log, obstacles)
 
+def move_toward(unit, dx, dy, allies, enemies, log, obstacles):
+    steps = unit.movement_points
+    while steps > 0:
+        step_x = 1 if dx > 0 else -1 if dx < 0 else 0
+        step_y = 1 if dy > 0 else -1 if dy < 0 else 0
 
-def try_move(unit, step_x, step_y, allies, enemies, log):
+        moved = try_move(unit, step_x, step_y, allies, enemies, log, obstacles)
+        if not moved:
+            break
+
+        dx -= step_x
+        dy -= step_y
+        steps -= 1
+
+def try_move(unit, step_x, step_y, allies, enemies, log, obstacles):
     new_x = unit.x + step_x
     new_y = unit.y + step_y
+    if (new_x, new_y) in obstacles:
+        return False
     occupied = any(
         u.is_alive() and u.x == new_x and u.y == new_y
         for u in allies + enemies
@@ -67,3 +74,5 @@ def try_move(unit, step_x, step_y, allies, enemies, log):
     if not occupied:
         unit.move(new_x, new_y)
         log(f"{unit.name} перемещается")
+        return True
+    return False

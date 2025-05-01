@@ -4,11 +4,11 @@ import pygame
 pygame.init()
 
 # Размер клетки
-TILE_SIZE = 110
+TILE_SIZE = 90
 
 # Размер поля
-FIELD_WIDTH = 12
-FIELD_HEIGHT = 6
+FIELD_WIDTH = 16
+FIELD_HEIGHT = 8
 
 # Размер экрана
 SCREEN_WIDTH = TILE_SIZE * FIELD_WIDTH

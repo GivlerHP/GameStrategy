@@ -1,27 +1,35 @@
 # units/carthage.py
 
-from units.base import Warrior, Archer, Cavalry
+import random
+from units.carthaginian_units import CarthaginianWarrior, CarthaginianArcher, CarthaginianCavalry
+from units.army import Army
 from settings import FIELD_WIDTH
+from units.unit_factory import UnitFactory
 
-class CarthaginianWarrior(Warrior):
-    def __init__(self, x, y):
-        super().__init__("Карфагенский воин", 100, 27, x, y)
+class CarthaginianFactory(UnitFactory):
+    def create_warrior(self, x, y):
+        return CarthaginianWarrior(x, y)
 
-class CarthaginianArcher(Archer):
-    def __init__(self, x, y):
-        super().__init__("Карфагенский лучник", 65, 17, x, y)
+    def create_archer(self, x, y):
+        return CarthaginianArcher(x, y)
 
-class CarthaginianCavalry(Cavalry):
-    def __init__(self, x, y):
-        super().__init__("Карфагенский всадник", 110, 24, x, y)
+    def create_cavalry(self, x, y):
+        return CarthaginianCavalry(x, y)
 
 def create_carthage_army():
-    class Army:
-        def __init__(self):
-            self.units = [
-                CarthaginianWarrior(FIELD_WIDTH - 1, 0),
-                CarthaginianArcher(FIELD_WIDTH - 1, 1),
-                CarthaginianCavalry(FIELD_WIDTH - 1, 2),
-            ]
+    factory = CarthaginianFactory()
+    x = FIELD_WIDTH - 2
 
-    return Army()
+    units = [
+        factory.create_warrior(x, 1),
+        factory.create_archer(x, 2),
+        factory.create_cavalry(x, 3),
+    ]
+
+    unit_methods = [factory.create_warrior, factory.create_archer, factory.create_cavalry]
+    for i in range(3):
+        creator = random.choice(unit_methods)
+        y = 4 + i
+        units.append(creator(x, y))
+
+    return Army(units)

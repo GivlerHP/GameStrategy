@@ -2,20 +2,42 @@
 
 import pygame
 import random
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, TILE_SIZE, FONT_PATH, FONT_SIZE
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, WHITE, TILE_SIZE, FONT_PATH, FONT_SIZE, GREEN
 from battlefield import draw_field, draw_units
 from units.rome import create_rome_army
 from units.carthage import create_carthage_army
 from units.base import Warrior, Archer, Cavalry
 from ai import ai_turn
+from sound import play_sound
+import os
 
 pygame.init()
+
+# Воспроизведение фоновой музыки
+MUSIC_PATH = os.path.join("assets", "sounds", "battle_theme.mp3")
+if os.path.exists(MUSIC_PATH):
+    pygame.mixer.music.load(MUSIC_PATH)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)  # -1 означает бесконечный цикл
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT + 200))
-pygame.display.set_caption("Battle Game")
+BACKGROUND_PATH = os.path.join("assets", "textures", "background.png")
+background = pygame.image.load(BACKGROUND_PATH).convert()
+background = pygame.transform.scale(background, (SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Echo of Great battles")
 clock = pygame.time.Clock()
 
 rome_army = create_rome_army()
 carthage_army = create_carthage_army()
+
+# Генерация препятствий
+NUM_OBSTACLES = 7
+obstacles = set()
+while len(obstacles) < NUM_OBSTACLES:
+    x = random.randint(2, SCREEN_WIDTH // TILE_SIZE - 3)
+    y = random.randint(0, SCREEN_HEIGHT // TILE_SIZE - 3)
+    if not any(u.x == x and u.y == y for u in rome_army.units + carthage_army.units):
+        obstacles.add((x, y))
 
 selected_unit = None
 selected_action = None
@@ -52,16 +74,16 @@ def check_victory():
 running = True
 while running:
     clock.tick(FPS)
-    screen.fill(WHITE)
+    screen.blit(background, (0, 0))
 
-    draw_field(screen, selected_unit)
+    draw_field(screen, selected_unit, obstacles)
     draw_units(screen, rome_army.units, (0, 0, 255), selected_unit)
     draw_units(screen, carthage_army.units, (255, 0, 0))
 
     victory_message = check_victory()
     if victory_message:
-        big_font = pygame.font.SysFont(FONT_PATH, 40)
-        text = big_font.render(victory_message, True, (0, 0, 0))
+        big_font = pygame.font.SysFont(FONT_PATH, 90)
+        text = big_font.render(victory_message, True, GREEN)
         screen.blit(text, (SCREEN_WIDTH // 2 - text.get_width() // 2, SCREEN_HEIGHT // 2 - text.get_height() // 2))
         pygame.display.flip()
         pygame.time.wait(5000)
@@ -128,7 +150,7 @@ while running:
                     dy = abs(grid_y - selected_unit.y)
                     if dx + dy <= selected_unit.movement_points:
                         occupied = any(u.is_alive() and u.x == grid_x and u.y == grid_y for u in rome_army.units + carthage_army.units)
-                        if not occupied:
+                        if not occupied and (grid_x, grid_y) not in obstacles:
                             selected_unit.move(grid_x, grid_y)
                             log(f"{selected_unit.name} перемещается")
 
@@ -165,12 +187,15 @@ while running:
 
     if player_turn_done:
         round_number += 1
-        ai_turn(carthage_army, rome_army, log)
+        ai_turn(carthage_army, rome_army, log, obstacles)
         reset_units(rome_army.units + carthage_army.units)
         selected_unit = None
         selected_action = None
         waiting_for_target = False
         player_turn_done = False
+
+    # Очистка нижней панели перед отрисовкой текста
+    pygame.draw.rect(screen, (240, 240, 240), (0, SCREEN_HEIGHT, SCREEN_WIDTH, 200))
 
     if selected_unit:
         actions = selected_unit.get_available_actions() + ["Ничего"]

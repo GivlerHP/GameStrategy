@@ -29,8 +29,16 @@ def get_unit_sprite(unit):
             UNIT_SPRITES[key] = None
     return UNIT_SPRITES[key]
 
-def draw_field(screen, selected_unit=None):
-    screen.blit(BACKGROUND_IMAGE, (0, 0))
+def draw_field(screen, selected_unit=None, obstacles=None):
+    for x in range(FIELD_WIDTH):
+        for y in range(FIELD_HEIGHT):
+            rect = pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+
+    if obstacles:
+        for ox, oy in obstacles:
+            pygame.draw.rect(screen, (50, 50, 50), (ox * TILE_SIZE, oy * TILE_SIZE, TILE_SIZE, TILE_SIZE))
+
 
     if selected_unit and selected_unit.can_move():
         for x in range(FIELD_WIDTH):
