@@ -4,15 +4,15 @@ import pygame
 pygame.init()
 
 # Размер клетки
-TILE_SIZE = 90
+TILE_SIZE = 80
 
 # Размер поля
-FIELD_WIDTH = 16
+FIELD_WIDTH = 15
 FIELD_HEIGHT = 8
 
 # Размер экрана
 SCREEN_WIDTH = TILE_SIZE * FIELD_WIDTH
-SCREEN_HEIGHT = TILE_SIZE * FIELD_HEIGHT + 100
+SCREEN_HEIGHT = TILE_SIZE * FIELD_HEIGHT + 10
 
 # Частота кадров
 FPS = 30
